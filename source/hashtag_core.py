@@ -33,7 +33,7 @@ def clean_sentence(sentence):
     """
     sentence = re.sub(r'(\d+)\s*(?!\S)', "", sentence)
 
-    return "".join([char for char in sentence if char in allowed_chars]).strip()
+    return "".join([char for char in sentence if char in allowed_chars]).strip('\n')
 
 
 def line_splitter(line_):
@@ -47,44 +47,43 @@ def line_splitter(line_):
     return p.split(line_)
 
 
-def update_word_metadata(metadata, document, line_number, sentence):
+def update_word_metadata(metadata, document, sentence):
     """
-    Increments the counter for the instances of the word, and adds a metadata
-    regarding the document name, line number, and sentence number in the array
+    Increments the counter for the instances of the word, and adds the corresponding sentence
     :param metadata:
     :param document:
-    :param line_number:
     :param sentence:
     :return:
     """
     metadata['count'] = metadata['count'] + 1
     word_references = metadata['references']
-    lines_in_document = word_references.get(document, set())
-    lines_in_document.add((line_number, sentence))
-    word_references[document] = lines_in_document
+    sentence_in_document = word_references.get(document, [])
+    sentence_in_document.append(sentence)
+    word_references[document] = sentence_in_document
 
     metadata['references'] = word_references
 
 
-def word_metadata_from_line(document_name, line_, line_number, word_metadata):
+def word_metadata_from_line(document_name, line_, word_metadata):
     sentence_counter = 1
 
     for sentence in line_splitter(line_):
 
         for word in clean_sentence(sentence).split(' '):
+            if len(word) > 4:
 
-            if word not in word_metadata.keys():
-                word_metadata[word] = {'count': 1,
-                                       'references': {document_name: {(line_number, sentence_counter)}}
-                                       }
-            else:
-                update_word_metadata(word_metadata[word], document_name, line_number, sentence_counter)
+                if word not in word_metadata.keys():
+                    word_metadata[word] = {'count': 1,
+                                           'references': {document_name: [sentence.strip('\n')]}
+                                           }
+                else:
+                    update_word_metadata(word_metadata[word], document_name, sentence.strip('\n'))
         sentence_counter += 1
 
     return word_metadata
 
 
-def loop_files(file_list):
+def get_hashtags_from_files(file_list):
     word_metadata = dict()
 
     for filename in file_list:
@@ -94,20 +93,22 @@ def loop_files(file_list):
 
             for line in document:
 
-                word_metadata = word_metadata_from_line(document_name=filename, line_=line,
-                                                        line_number=line_counter,
-                                                        word_metadata=word_metadata)
+                word_metadata = word_metadata_from_line(document_name=filename, line_=line, word_metadata=word_metadata)
                 line_counter += 1
 
     return word_metadata
+
+
+def sort_metadata(word_metadata):
+    return sorted(((metadata['count'], word, metadata) for word, metadata in word_metadata.items()), reverse=True)
 
 
 if __name__ == "__main__":
 
     file_list = ['doc' + str(filenumber) + '.txt' for filenumber in range(1, 7)]
 
-    result = loop_files(file_list)
-    sorted_by_counter = sorted(((metadata['count'], word, metadata) for word, metadata in result.items()), reverse=True)
+    result = get_hashtags_from_files(file_list)
+    sorted_by_counter = sort_metadata(result)
 
     for w in sorted_by_counter:
         print(str(w))

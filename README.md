@@ -22,6 +22,25 @@
 
 ## How to run the code
 
+### Set up the parameters in the config.ini file
+
+```
+    cd hashtag_project/source
+    vim config.ini  # Or any file editor
+
+```
+
+```
+    # Default values:
+
+    [reportlab]
+    top_words=20
+    references_per_document=1
+
+    [hashtag_core]
+    min_word_length=6
+```
+
 ### Execute main.py after initializing the virtualenv
 
 ```
@@ -38,3 +57,4 @@
 
 ## Known issues
 - Right now it only shows one reference per document (up to 6 references total).  When reporting more than two references per document, ReportLab breaks because the total height of the row is bigger than a page.
+- The sentence splitter method sometimes breaks the line in the wrong part.

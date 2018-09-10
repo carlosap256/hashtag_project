@@ -66,13 +66,13 @@ def update_word_metadata(metadata, document, sentence):
     metadata['references'] = word_references
 
 
-def word_metadata_from_line(document_name, line_, word_metadata):
+def word_metadata_from_line(document_name, line_, word_metadata, min_word_length):
     sentence_counter = 1
 
     for sentence in line_splitter(line_):
 
         for word in clean_sentence(sentence).split(' '):
-            if len(word) > 4:
+            if len(word) >= min_word_length:
 
                 if word not in word_metadata.keys():
                     word_metadata[word] = {'count': 1,
@@ -85,7 +85,7 @@ def word_metadata_from_line(document_name, line_, word_metadata):
     return word_metadata
 
 
-def get_hashtags_from_files(file_list):
+def get_hashtags_from_files(file_list, min_word_length):
     """
     Returns a dictionary with the metadata including the word, counter for instances and the sentences
     :param file_list:
@@ -100,7 +100,7 @@ def get_hashtags_from_files(file_list):
 
             for line in document:
 
-                word_metadata = word_metadata_from_line(document_name=filename, line_=line, word_metadata=word_metadata)
+                word_metadata = word_metadata_from_line(filename, line, word_metadata, min_word_length)
                 line_counter += 1
 
     return word_metadata

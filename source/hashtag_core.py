@@ -70,7 +70,7 @@ def extract_words(file_list):
     word_metadata = dict()
 
     for filename in file_list:
-        doc_file = os.path.join(BASE_DIR, 'hashtag', 'resources', 'documents', filename)
+        doc_file = os.path.join(BASE_DIR, 'resources', filename)
         with open(doc_file, "r", encoding='utf-8') as document:
             line_counter = 1
 

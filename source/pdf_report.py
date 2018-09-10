@@ -48,7 +48,7 @@ class MetadataToPDF:
         story.append(Paragraph(ptext, self.styles["Center"]))
         story.append(Spacer(1, 24))
 
-        ptext = '<font size=12>Showing the {0} top words, with minimum length of {1} characters, ' \
+        ptext = '<font size=12>Showing the top {0} words, with minimum length of {1} characters, ' \
                 'and {2} of the references per document.</font>'.format(self.max_results, self.min_word_length,
                                                                        self.max_ref_per_document)
         story.append(Paragraph(ptext, self.styles["Left"]))

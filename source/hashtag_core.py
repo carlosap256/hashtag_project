@@ -58,15 +58,33 @@ def update_word_metadata(metadata, document, line_number, sentence):
     :return:
     """
     metadata['count'] = metadata['count'] + 1
-    word_instances = metadata['instances']
-    lines_in_document = word_instances.get(document, set())
+    word_references = metadata['references']
+    lines_in_document = word_references.get(document, set())
     lines_in_document.add((line_number, sentence))
-    word_instances[document] = lines_in_document
+    word_references[document] = lines_in_document
 
-    metadata['instances'] = word_instances
+    metadata['references'] = word_references
 
 
-def extract_words(file_list):
+def word_metadata_from_line(document_name, line_, line_number, word_metadata):
+    sentence_counter = 1
+
+    for sentence in line_splitter(line_):
+
+        for word in clean_sentence(sentence).split(' '):
+
+            if word not in word_metadata.keys():
+                word_metadata[word] = {'count': 1,
+                                       'references': {document_name: {(line_number, sentence_counter)}}
+                                       }
+            else:
+                update_word_metadata(word_metadata[word], document_name, line_number, sentence_counter)
+        sentence_counter += 1
+
+    return word_metadata
+
+
+def loop_files(file_list):
     word_metadata = dict()
 
     for filename in file_list:
@@ -75,19 +93,10 @@ def extract_words(file_list):
             line_counter = 1
 
             for line in document:
-                sentence_counter = 1
 
-                for sentence in line_splitter(line):
-
-                    for word in clean_sentence(sentence).split(' '):
-
-                        if word not in word_metadata.keys():
-                            word_metadata[word] = {'count': 1,
-                                                   'instances': {filename: {(line_counter, sentence_counter)}}
-                                                   }
-                        else:
-                            update_word_metadata(word_metadata[word], filename, line_counter, sentence_counter)
-                    sentence_counter += 1
+                word_metadata = word_metadata_from_line(document_name=filename, line_=line,
+                                                        line_number=line_counter,
+                                                        word_metadata=word_metadata)
                 line_counter += 1
 
     return word_metadata
@@ -97,7 +106,7 @@ if __name__ == "__main__":
 
     file_list = ['doc' + str(filenumber) + '.txt' for filenumber in range(1, 7)]
 
-    result = extract_words(file_list)
+    result = loop_files(file_list)
     sorted_by_counter = sorted(((metadata['count'], word, metadata) for word, metadata in result.items()), reverse=True)
 
     for w in sorted_by_counter:

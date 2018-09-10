@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class MetadataToPDF:
 
-    def __init__(self, report_filename, max_results=20, max_ref_per_document=1):
+    def __init__(self, report_filename, max_results=20, max_ref_per_document=1, min_word_length=6):
         report_filepath = os.path.join(BASE_DIR, 'output', report_filename)
         self.doc = SimpleDocTemplate(report_filepath, pagesize=A4,
                                      rightMargin=72, leftMargin=72,
@@ -31,6 +31,7 @@ class MetadataToPDF:
 
         self.max_results = max_results
         self.max_ref_per_document = max_ref_per_document
+        self.min_word_length = min_word_length
         logger.info("Report lab initialized to export file: "+str(report_filepath))
 
     def generate_report(self, hashtag_list):
@@ -47,8 +48,9 @@ class MetadataToPDF:
         story.append(Paragraph(ptext, self.styles["Center"]))
         story.append(Spacer(1, 24))
 
-        ptext = '<font size=12>Showing the {0} top words, ' \
-                'and {1} of the references per document</font>'.format(self.max_results, self.max_ref_per_document)
+        ptext = '<font size=12>Showing the {0} top words, with minimum length of {1} characters, ' \
+                'and {2} of the references per document.</font>'.format(self.max_results, self.min_word_length,
+                                                                       self.max_ref_per_document)
         story.append(Paragraph(ptext, self.styles["Left"]))
         story.append(Spacer(1, 24))
 

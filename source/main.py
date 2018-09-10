@@ -45,7 +45,7 @@ if __name__ == "__main__":
                 " and " + str(references_per_document) + " references per document")
     report_file = 'test.pdf'
     logger.info("Output to file: " + report_file)
-    metadata_report = MetadataToPDF(report_file, top_words, references_per_document)
+    metadata_report = MetadataToPDF(report_file, top_words, references_per_document, min_word_length)
 
     logger.info("Generating report")
     metadata_report.generate_report(sorted_by_counter)

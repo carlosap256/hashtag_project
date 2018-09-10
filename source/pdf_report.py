@@ -40,6 +40,11 @@ class MetadataToPDF:
         story.append(Paragraph(ptext, self.styles["Center"]))
         story.append(Spacer(1, 24))
 
+        ptext = '<font size=12>Showing the {0} top words, ' \
+                'and {1} of the references per document</font>'.format(self.max_results, self.max_ref_per_document)
+        story.append(Paragraph(ptext, self.styles["Left"]))
+        story.append(Spacer(1, 24))
+
         table_data = []
         table_data.append(['Word(#)', 'Documents', 'Sentences containing the word'])
 

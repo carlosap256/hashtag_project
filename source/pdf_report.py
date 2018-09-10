@@ -2,17 +2,18 @@ from reportlab.lib.enums import TA_JUSTIFY, TA_RIGHT, TA_CENTER, TA_LEFT
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
-from reportlab.platypus import PageBreak, PageBegin, Table, TableStyle
+from reportlab.platypus import PageBegin, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
-from io import StringIO
-import base64
+from reportlab.platypus.doctemplate import LayoutError
 import os
 import itertools
 import re
+import logging
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+logger = logging.getLogger(__name__)
 
 
 class MetadataToPDF:
@@ -30,8 +31,14 @@ class MetadataToPDF:
 
         self.max_results = max_results
         self.max_ref_per_document = max_ref_per_document
+        logger.info("Report lab initialized to export file: "+str(report_filepath))
 
     def generate_report(self, hashtag_list):
+        """
+        Generates base PDF file
+        :param hashtag_list:
+        :return:
+        """
         story = []
         story.append(PageBegin())
 
@@ -48,6 +55,7 @@ class MetadataToPDF:
         table_data = []
         table_data.append(['Word(#)', 'Documents', 'Sentences containing the word'])
 
+        logger.debug("Generating rows")
         for word_metadata in itertools.islice(hashtag_list, self.max_results):
             table_data.append(self.generate_word_row(word_metadata[1], word_metadata[2]))
 
@@ -61,9 +69,21 @@ class MetadataToPDF:
                                    ]))
 
         story.append(table)
-        self.doc.build(story)
+        try:
+            self.doc.build(story)
+        except LayoutError:
+            logger.error("Cannot create table.  Try reducing the 'max_ref_per_document' argument")
+        else:
+            logger.debug("Report saved to file")
 
     def generate_word_row(self, word: str, metadata):
+        """
+        Generates a row containing the Word (hashtag), the list of documents that references it, and some sentences
+        per document according
+        :param word:
+        :param metadata:
+        :return:
+        """
         styleSheet = getSampleStyleSheet()
 
         documents = [Paragraph(file, styleSheet["BodyText"]) for file in metadata['references'].keys()]
@@ -74,17 +94,7 @@ class MetadataToPDF:
                 bolded_text = re.sub('(' + word + ')', r'<b>\g<1></b>', sentence, flags=re.IGNORECASE)
                 highlighted_sentences.append(Paragraph(bolded_text, styleSheet["BodyText"]))
 
+        logger.debug("Generated row for: '"+word+"'")
         return [word.capitalize(), documents, highlighted_sentences]
 
 
-if __name__ == "__main__":
-    file_list = ['doc' + str(filenumber) + '.txt' for filenumber in range(1, 7)]
-
-    import hashtag_core
-
-    result = hashtag_core.get_hashtags_from_files(file_list)
-    sorted_by_counter = hashtag_core.sort_metadata(result)
-
-    m = MetadataToPDF('test.pdf')
-
-    m.generate_report(sorted_by_counter)

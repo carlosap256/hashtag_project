@@ -1,8 +1,10 @@
 import re
 import os
 from string import ascii_lowercase, digits
+import logging
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+logger = logging.getLogger(__name__)
 
 
 def clean_sentence(sentence):
@@ -84,6 +86,11 @@ def word_metadata_from_line(document_name, line_, word_metadata):
 
 
 def get_hashtags_from_files(file_list):
+    """
+    Returns a dictionary with the metadata including the word, counter for instances and the sentences
+    :param file_list:
+    :return:
+    """
     word_metadata = dict()
 
     for filename in file_list:
@@ -102,13 +109,3 @@ def get_hashtags_from_files(file_list):
 def sort_metadata(word_metadata):
     return sorted(((metadata['count'], word, metadata) for word, metadata in word_metadata.items()), reverse=True)
 
-
-if __name__ == "__main__":
-
-    file_list = ['doc' + str(filenumber) + '.txt' for filenumber in range(1, 7)]
-
-    result = get_hashtags_from_files(file_list)
-    sorted_by_counter = sort_metadata(result)
-
-    for w in sorted_by_counter:
-        print(str(w))

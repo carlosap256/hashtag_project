@@ -1,5 +1,6 @@
 from source import hashtag_core
-
+import logging
+logger = logging.getLogger(__name__)
 
 class TestHashtagCore:
 

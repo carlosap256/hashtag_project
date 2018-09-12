@@ -2,11 +2,23 @@ import hashtag_core
 from pdf_report import MetadataToPDF
 import logging
 import configparser
+import os
+from os import listdir
+from os.path import isfile, join
 
 FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
           '-35s %(lineno) -5d: %(message)s')
 logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def get_doc_file_paths():
+    resources_dir = os.path.join(BASE_DIR, 'resources')
+    text_files = [f for f in listdir(resources_dir) if isfile(join(resources_dir, f)) and f.endswith('.txt')]
+    return map(lambda f: join(resources_dir, f), text_files)
+
 
 if __name__ == "__main__":
     config = configparser.ConfigParser()
@@ -33,7 +45,7 @@ if __name__ == "__main__":
         logger.warning("No 'hashtag_core' section in the config.ini file.  Using defaults")
 
     """Generating sample filelist"""
-    file_list = ['doc' + str(filenumber) + '.txt' for filenumber in range(1, 7)]
+    file_list = get_doc_file_paths()
 
     logger.info("Extracting hashtag from files: " + str(file_list))
     hashtag_results = hashtag_core.get_hashtags_from_files(file_list, min_word_length)

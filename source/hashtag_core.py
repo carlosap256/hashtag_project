@@ -94,8 +94,8 @@ def get_hashtags_from_files(file_list, min_word_length):
     word_metadata = dict()
 
     for filename in file_list:
-        doc_file = os.path.join(BASE_DIR, 'resources', filename)
-        with open(doc_file, "r", encoding='utf-8') as document:
+
+        with open(filename, "r", encoding='utf-8') as document:
             line_counter = 1
 
             for line in document:

@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 
 class TestHashtagCore:
 
-    def test_clean_sentence(self):
+    def test_clean_up_sentence(self):
         test_sentence = "Test sentence -- " \
                         "Contractions: You're, I'm, You've, They're can't don't -- " \
                         "Dashed words: Commander-in-Chief 100-year-old " \
@@ -12,7 +12,7 @@ class TestHashtagCore:
         expected_sentence = "test sentence contractions you i you they cant do  " \
                             "dashed words commander-in-chief 100-year-old numbers"
 
-        assert hashtag_core.clean_sentence(test_sentence) == expected_sentence
+        assert hashtag_core.clean_up_sentence(test_sentence) == expected_sentence
 
     def test_line_splitter(self):
         test_sentence = "Sentence with titles like Mr. Ms. Jr. etc. should not break. Sentences with question mark? " \

@@ -13,7 +13,7 @@ class WordMetadata(object):
         self.documents = set()
         self.references = list()
 
-    def add_reference_from_document(self, reference: str, document: str) -> None:
+    def add_reference(self, reference: str, document: str) -> None:
         self.references.append(reference)
         self.documents.add(document)
         self.count += 1

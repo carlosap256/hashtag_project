@@ -1,10 +1,12 @@
-import hashtag_core
-from pdf_report import MetadataToPDF
 import logging
 import configparser
 import os
 from os import listdir
 from os.path import isfile, join
+
+from pdf_report import MetadataToPDF
+
+from hashtag_core import Hashtag
 
 FORMAT = ('%(levelname) -10s %(asctime)s %(name) -30s %(funcName) '
           '-35s %(lineno) -5d: %(message)s')
@@ -48,8 +50,12 @@ if __name__ == "__main__":
     file_list = get_doc_file_paths()
 
     logger.info("Extracting hashtag from files: " + str(file_list))
-    hashtag_results = hashtag_core.get_hashtags_from_files(file_list, min_word_length)
-    sorted_by_counter = hashtag_core.sort_metadata(hashtag_results)
+    hashtag = Hashtag(min_word_length)
+
+    for file_path in file_list:
+        hashtag.append_to_hashtags(file_path)
+
+    sorted_by_counter = hashtag.get_sorted_hashtags()
 
     logger.info("Found " + str(len(sorted_by_counter)) + " hashtags")
 

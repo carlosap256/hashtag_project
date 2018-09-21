@@ -20,7 +20,7 @@ class WordMetadata(object):
 
     def merge(self, wordmetadata):
         if self._is_compatible(wordmetadata):
-            self.documents = self.documents & wordmetadata.documents
+            self.documents = self.documents | wordmetadata.documents
             self.references.extend(wordmetadata.references)
             self.count += wordmetadata.count
 
@@ -29,8 +29,8 @@ class WordMetadata(object):
 
     def __str__(self):
         return str({'count': self.count,
-                'documents': list(self.documents),
-                'references': self.references})
+                    'documents': sorted(list(self.documents)),
+                    'references': self.references})
 
     def __repr__(self):
         return self.__str__()

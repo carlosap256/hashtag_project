@@ -4,7 +4,7 @@ import os
 from os import listdir
 from os.path import isfile, join
 
-from pdf_report import MetadataToPDF
+from pdf_report import MetadataToPDF, ReportSettings
 
 from hashtag_core import Hashtag
 
@@ -63,7 +63,13 @@ if __name__ == "__main__":
                 " and " + str(references_per_document) + " references per document")
     report_file = 'test.pdf'
     logger.info("Output to file: " + report_file)
-    metadata_report = MetadataToPDF(report_file, top_words, references_per_document, min_word_length)
+
+    report_settings = ReportSettings()
+    report_settings.report_file_path = report_file
+    report_settings.max_results = top_words
+    report_settings.max_references_per_document = references_per_document
+    report_settings.min_word_length = min_word_length
+    metadata_report = MetadataToPDF(report_settings)
 
     logger.info("Generating report")
     metadata_report.generate_report(sorted_by_counter)

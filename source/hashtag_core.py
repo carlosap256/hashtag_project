@@ -85,7 +85,7 @@ class Hashtag:
         return "".join([char for char in sentence if char in allowed_chars]).strip('\n')
 
     def get_sorted_hashtags(self):
-        return sorted(((metadata['count'], word, metadata) for word, metadata in self.hashtags.items()), reverse=True)
+        return sorted(((metadata.count, word, metadata) for word, metadata in self.hashtags.items()), reverse=True)
 
     def reset_hashtags(self) -> None:
         self.hashtags.clear()

@@ -2,7 +2,7 @@ import os
 import itertools
 import re
 import logging
-from typing import List
+from typing import List, Iterator
 
 from reportlab.lib.enums import TA_JUSTIFY, TA_RIGHT, TA_CENTER, TA_LEFT
 from reportlab.lib import colors
@@ -11,10 +11,12 @@ from reportlab.platypus import Flowable, SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.platypus import PageBegin, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, StyleSheet1
 from reportlab.platypus.doctemplate import LayoutError
 
 from hashtag_core import Hashtag
+from word_metadata import WordMetadata
+import util
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 logger = logging.getLogger(__name__)
@@ -81,10 +83,10 @@ class MetadataToPDF:
         table_data = self._append_table_header(table_data)
         logger.debug("Generating rows")
 
-        for result in self._loop_top_results(hashtag):
+        for result in util._loop_first_n_results(hashtag, self.report_settings.max_results):
             word = result[1]
             wordmetadata = result[2]
-            table_data.append(self.generate_word_row(word, wordmetadata))
+            table_data.append(self._generate_row(word, wordmetadata))
 
         return table_data
 
@@ -92,30 +94,22 @@ class MetadataToPDF:
         table_data.append(['Word(#)', 'Documents', 'Sentences containing the word'])
         return table_data
 
-    def _loop_top_results(self, hashtag: Hashtag):
-        for r in itertools.islice(hashtag, self.report_settings.max_results):
-            yield r
-
-    def generate_word_row(self, word: str, metadata):
-        """
-        Generates a row containing the Word (hashtag), the list of documents that references it, and some sentences
-        per document according
-        :param word:
-        :param metadata:
-        :return:
-        """
-        styleSheet = getSampleStyleSheet()
-
-        documents = [Paragraph(file, styleSheet["BodyText"]) for file in metadata['references'].keys()]
-
-        highlighted_sentences = []
-        for sentences_per_document in metadata['references'].values():
-            for sentence in itertools.islice(sentences_per_document, self.report_settings.max_references_per_document):
-                bolded_text = re.sub('(' + word + ')', r'<b>\g<1></b>', sentence, flags=re.IGNORECASE)
-                highlighted_sentences.append(Paragraph(bolded_text, styleSheet["BodyText"]))
+    def _generate_row(self, word: str, metadata: WordMetadata):
+        style_sheet = getSampleStyleSheet()
+        documents_column = self._generate_documents_column(metadata.documents, style_sheet["BodyText"])
+        highlighted_sentences = [hs for hs in self._generate_references_column(metadata, style_sheet["BodyText"])]
 
         logger.debug("Generated row for: '" + word + "'")
-        return [word.capitalize(), documents, highlighted_sentences]
+        return [word.capitalize(), documents_column, highlighted_sentences]
+
+    def _generate_documents_column(self, documents, style: StyleSheet1) -> List[Flowable]:
+        return [Paragraph(file_name, style) for file_name in documents]
+
+    def _generate_references_column(self, metadata: WordMetadata, style: StyleSheet1) -> Iterator[Flowable]:
+        for sentences_per_document in metadata.get_references():
+            for sentence in itertools.islice(sentences_per_document, self.report_settings.max_references_per_document):
+                bolded_text = re.sub('(' + metadata.word + ')', r'<b>\g<1></b>', sentence, flags=re.IGNORECASE)
+                yield Paragraph(bolded_text, style)
 
     def _generate_table(self, table_data: List[Flowable]) -> Table:
         table = Table(table_data, colWidths=[3 * cm, 2.1 * cm, 11 * cm], repeatRows=1)
@@ -135,4 +129,3 @@ class MetadataToPDF:
             logger.error("Cannot create table.  Try reducing the 'max_ref_per_document' argument")
         else:
             logger.debug("Report saved to file")
-

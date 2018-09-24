@@ -33,11 +33,9 @@
 ```
     # Default values:
 
-    [reportlab]
-    top_words=20
+    [default]
+    top_words=40
     references_per_document=1
-
-    [hashtag_core]
     min_word_length=6
 ```
 

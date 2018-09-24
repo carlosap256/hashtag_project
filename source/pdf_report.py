@@ -16,17 +16,11 @@ from reportlab.platypus.doctemplate import LayoutError
 
 from hashtag_core import Hashtag
 from word_metadata import WordMetadata
+from report_settings import ReportSettings
 import util
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 logger = logging.getLogger(__name__)
-
-
-class ReportSettings:
-    report_file_path: str = "test.pdf"
-    max_results: int = 20
-    max_references_per_document: int = 1
-    min_word_length: int = 6
 
 
 class MetadataToPDF:
@@ -51,14 +45,9 @@ class MetadataToPDF:
 
     def generate_report(self, hashtags: Hashtag) -> None:
         self._init_report_data()
-
         self._include_header()
         self._include_settings_description()
-
-        table_data = self._create_table_data(hashtags)
-        table = self._generate_table(table_data)
-        self.report_data.append(table)
-
+        self._include_table(hashtags)
         self._build_report()
 
     def _init_report_data(self) -> None:
@@ -77,6 +66,11 @@ class MetadataToPDF:
                                                                         self.report_settings.max_references_per_document)
         self.report_data.append(Paragraph(ptext, self.styles["Left"]))
         self.report_data.append(Spacer(1, 24))
+
+    def _include_table(self, hashtags: Hashtag):
+        table_data = self._create_table_data(hashtags)
+        table = self._generate_table_field(table_data)
+        self.report_data.append(table)
 
     def _create_table_data(self, hashtag: Hashtag):
         table_data = list()
@@ -111,7 +105,7 @@ class MetadataToPDF:
                 bolded_text = re.sub('(' + metadata.word + ')', r'<b>\g<1></b>', sentence, flags=re.IGNORECASE)
                 yield Paragraph(bolded_text, style)
 
-    def _generate_table(self, table_data: List[Flowable]) -> Table:
+    def _generate_table_field(self, table_data: List[Flowable]) -> Table:
         table = Table(table_data, colWidths=[3 * cm, 2.1 * cm, 11 * cm], repeatRows=1)
         table.setStyle(TableStyle([('ALIGN', (1, 1), (-2, -2), 'RIGHT'),
                                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),

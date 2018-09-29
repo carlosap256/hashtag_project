@@ -1,3 +1,11 @@
+# Hashtag
+
+## Description
+Find the most common words from .txt files located in the 
+resources folder, and generate a PDF report to the output folder 
+with each word, the documents containing it, and the sentences on those 
+documents that have the word. 
+
 ## How to install the requirements
 
 ### Install virtual environment and python3
